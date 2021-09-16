@@ -12,6 +12,7 @@ import org.apache.camel.component.as2.api.AS2MessageStructure;
 import org.apache.camel.component.as2.api.AS2SignatureAlgorithm;
 import org.apache.camel.component.as2.api.util.AS2Utils;
 import org.apache.camel.component.as2.internal.AS2ApiName;
+import org.apache.camel.component.as2.internal.AS2Constants;
 import org.apache.http.HttpRequest;
 import org.apache.http.protocol.HttpCoreContext;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,11 +51,8 @@ public class AS2ServerRouteBuilder extends RouteBuilder {
                     @Override
                     public void process(Exchange exchange) throws Exception {
                         System.out.println("Message in: " + exchange.getIn().getBody().getClass());
-
-                        // https://github.com/atmiksoni/spring-boot-camel-2.0/blob/02ae71d19e208a74ef9a8e25a22977577d5e5514/camel-master/examples/camel-example-as2/src/main/java/org/apache/camel/example/as2/ExamineAS2ServerEndpointExchange.java
-                        HttpCoreContext context = exchange.getProperty(org.apache.camel.component.as2.internal.AS2Constants.AS2_INTERCHANGE, HttpCoreContext.class);
+                        HttpCoreContext context = exchange.getProperty(AS2Constants.AS2_INTERCHANGE, HttpCoreContext.class);
                         String ediMessage = exchange.getIn().getBody(String.class);
-
                         if (context != null) {
                             HttpRequest request = context.getRequest();
                             log.info("\n*******************************************************************************"
@@ -70,12 +68,10 @@ public class AS2ServerRouteBuilder extends RouteBuilder {
                         }
                     }
                 })
-                .log("redirecting message to stdout:")
-                .to("stream:out");
+                .log("redirecting message to stdout:");
     }
 
     private Endpoint configureAs2ServerEndpoint() throws Exception {
-
         String methodName = "listen";
         AS2ApiName as2ApiNameServer = AS2ApiName.SERVER;
 
@@ -87,7 +83,7 @@ public class AS2ServerRouteBuilder extends RouteBuilder {
         endpointConfiguration.setAs2Version(as2Version);
 
         // camel as2 server component will send its own hardcoded template anyway
-        endpointConfiguration.setMdnMessageTemplate("my template");
+        endpointConfiguration.setMdnMessageTemplate("some template");
 
         if (NEED_SIGNED_ENCRYPTED) {
             AS2SignatureAlgorithm signingAlgorithm = AS2SignatureAlgorithm.SHA1WITHRSA;

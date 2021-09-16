@@ -49,7 +49,7 @@ public class LocalhostStubAS2ClientRouteBuilder extends RouteBuilder {
     private Integer as2ServerPortNumber;
 
     private static org.apache.http.entity.ContentType contentType =
-            org.apache.http.entity.ContentType.create("application/edifact", (Charset) null);
+            org.apache.http.entity.ContentType.create("application/edifact", "utf-8");
 
     @Override
     public void configure() throws Exception {
@@ -57,12 +57,9 @@ public class LocalhostStubAS2ClientRouteBuilder extends RouteBuilder {
         from("jetty:http://localhost:3500/link")
                 .routeId("as2ClientLocalhost")
                 .process(new Processor() {
-
                     @Override
                     public void process(Exchange exchange) throws Exception {
                         String messageIn = exchange.getIn().getBody(String.class);
-                        System.out.println("Request Body Message: " + messageIn);
-
                         if (exchange.getIn() instanceof HttpMessage) {
                             HttpMessage httpMessage =
                                     (HttpMessage) exchange.getIn();
@@ -79,19 +76,18 @@ public class LocalhostStubAS2ClientRouteBuilder extends RouteBuilder {
                         }
 
                         exchange.getIn().reset();
-
-                        exchange.getIn().setBody(messageIn);
+                        exchange.getIn().setBody("for test sample EDI");
 
                         // enriching
-                        exchange.getIn().setHeader("CamelAS2.as2To", "DKtestAS2");
-                        exchange.getIn().setHeader("CamelAS2.as2From", "DKcompanyAS2");
+                        exchange.getIn().setHeader("CamelAS2.as2To", "CompanyA");
+                        exchange.getIn().setHeader("CamelAS2.as2From", "CompanyB");
 
                         exchange.getIn().setHeader("CamelAS2.as2Version", as2Version);
                         exchange.getIn().setHeader("CamelAS2.ediMessageContentType", contentType);
                         exchange.getIn().setHeader("CamelAS2.server", "DK AS2Client Localhost");
                         exchange.getIn().setHeader("CamelAS2.subject", "testDK");
                         exchange.getIn().setHeader("CamelAS2.from", "DKEdi");
-                        exchange.getIn().setHeader("CamelAS2.dispositionNotificationTo", "dk2k@mail.ru");
+                        exchange.getIn().setHeader("CamelAS2.dispositionNotificationTo", "cms4317@naver.com");
                         exchange.getIn().setHeader("CamelAS2.requestUri", as2RequestUri);
 
                         if (NEED_SIGNED_ENCRYPTED) {
@@ -105,7 +101,6 @@ public class LocalhostStubAS2ClientRouteBuilder extends RouteBuilder {
                         } else {
                             exchange.getIn().setHeader("CamelAS2.as2MessageStructure", AS2MessageStructure.PLAIN);
                         }
-
                     }
                 })
                 .to("as2://client/send?targetHostName=localhost" +
@@ -119,7 +114,6 @@ public class LocalhostStubAS2ClientRouteBuilder extends RouteBuilder {
                     @Override
                     public void process(Exchange exchange) throws Exception {
                         if (exchange.getIn() != null) {
-
                             try {
                                 String messageIn = exchange.getIn().getBody(String.class);
                                 System.out.println("+++++++++++++++++++++++++++++++++++++++++++++++++++");
@@ -159,9 +153,7 @@ public class LocalhostStubAS2ClientRouteBuilder extends RouteBuilder {
                             Header header = headerEnumeration.nextElement();
                             System.out.println(header.getName() + ": " + header.getValue());
                         }
-                        System.out.println("----");
                         System.out.println(bodyPart.getContent());
-                        System.out.println("----");
                         //processTextData(bodyPart.getContent());
                     } else if (bodyPart.isMimeType("application/octet-stream")) {
                         log.info("application/octet-stream");
@@ -182,9 +174,7 @@ public class LocalhostStubAS2ClientRouteBuilder extends RouteBuilder {
                             byte[] bytes = new byte[n];
                             byteArrayInputStream.read(bytes, 0, n);
                             String s = new String(bytes, StandardCharsets.UTF_8);
-                            System.out.println("----");
                             System.out.println(new String(bytes));
-                            System.out.println("----");
                         }
                     } else {
                         System.out.println(bodyPart.getContent().getClass());
