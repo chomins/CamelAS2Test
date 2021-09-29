@@ -65,7 +65,7 @@ public class MendelsonAs2ClientRouteBuilder extends RouteBuilder {
     @Override
     public void configure() {
 
-        from("jetty:http://localhost:3400/link")
+        from("jetty:http://localhost:3403/link")
                 .routeId("as2ClientMendelson")
                 .process(new Processor() {
 

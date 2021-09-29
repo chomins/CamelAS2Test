@@ -9,15 +9,24 @@ import org.apache.camel.component.as2.AS2Component;
 import org.apache.camel.component.as2.AS2Configuration;
 import org.apache.camel.component.as2.api.AS2EncryptionAlgorithm;
 import org.apache.camel.component.as2.api.AS2MessageStructure;
+import org.apache.camel.component.as2.api.AS2ServerConnection;
 import org.apache.camel.component.as2.api.AS2SignatureAlgorithm;
 import org.apache.camel.component.as2.api.util.AS2Utils;
 import org.apache.camel.component.as2.internal.AS2ApiName;
+import org.apache.camel.component.as2.internal.AS2Constants;
+import org.apache.camel.http.common.HttpMessage;
+import org.apache.commons.io.IOUtils;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpEntityEnclosingRequest;
 import org.apache.http.HttpRequest;
 import org.apache.http.protocol.HttpCoreContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import ru.outofrange.cert.SelfSignedCertLoader;
+
+import javax.servlet.http.HttpServletRequest;
+import java.nio.charset.StandardCharsets;
 
 @Component
 public class AS2ServerRouteBuilder extends RouteBuilder {
@@ -50,13 +59,15 @@ public class AS2ServerRouteBuilder extends RouteBuilder {
                     @Override
                     public void process(Exchange exchange) throws Exception {
                         System.out.println("Message in: " + exchange.getIn().getBody().getClass());
-
+                        System.out.println(as2ServerEndpoint);
                         // https://github.com/atmiksoni/spring-boot-camel-2.0/blob/02ae71d19e208a74ef9a8e25a22977577d5e5514/camel-master/examples/camel-example-as2/src/main/java/org/apache/camel/example/as2/ExamineAS2ServerEndpointExchange.java
-                        HttpCoreContext context = exchange.getProperty(org.apache.camel.component.as2.internal.AS2Constants.AS2_INTERCHANGE, HttpCoreContext.class);
+                        HttpCoreContext context = exchange.getProperty(AS2Constants.AS2_INTERCHANGE, HttpCoreContext.class);
                         String ediMessage = exchange.getIn().getBody(String.class);
-
                         if (context != null) {
                             HttpRequest request = context.getRequest();
+                            HttpEntity entity = ((HttpEntityEnclosingRequest)request).getEntity();
+                            String result = IOUtils.toString(entity.getContent(), StandardCharsets.UTF_8);
+                            System.out.println(result);
                             log.info("\n*******************************************************************************"
                                     + "\n*******************************************************************************"
                                     + "\n\n******************* AS2 Server Endpoint Received Request **********************"
@@ -105,8 +116,8 @@ public class AS2ServerRouteBuilder extends RouteBuilder {
         as2Component.setCamelContext(camelContext);
         as2Component.setConfiguration(endpointConfiguration);
 
-        Endpoint serverEndpoint=as2Component.createEndpoint("as2:server/listen?serverPortNumber={{camel.server.port}}&requestUriPattern={{camel.server.uri}}");
-
+        Endpoint serverEndpoint = as2Component.createEndpoint("as2:server/listen?serverPortNumber={{camel.server.port}}&requestUriPattern={{camel.server.uri}}");
+        System.out.println(serverEndpoint);
         return serverEndpoint;
     }
 }

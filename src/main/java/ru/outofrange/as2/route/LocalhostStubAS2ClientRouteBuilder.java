@@ -54,7 +54,7 @@ public class LocalhostStubAS2ClientRouteBuilder extends RouteBuilder {
     @Override
     public void configure() throws Exception {
 
-        from("jetty:http://localhost:3500/link")
+        from("jetty:http://localhost:3503/link")
                 .routeId("as2ClientLocalhost")
                 .process(new Processor() {
 
@@ -80,7 +80,7 @@ public class LocalhostStubAS2ClientRouteBuilder extends RouteBuilder {
 
                         exchange.getIn().reset();
 
-                        exchange.getIn().setBody(messageIn);
+                        exchange.getIn().setBody("Sample_EDI");
 
                         // enriching
                         exchange.getIn().setHeader("CamelAS2.as2To", "DKtestAS2");
@@ -102,7 +102,8 @@ public class LocalhostStubAS2ClientRouteBuilder extends RouteBuilder {
                             exchange.getIn().setHeader("CamelAS2.signingPrivateKey", selfSignedCertLoader.getPrivateKey());
                             exchange.getIn().setHeader("CamelAS2.encryptingCertificateChain", selfSignedCertLoader.getChain());
 
-                        } else {
+                        }
+                        else {
                             exchange.getIn().setHeader("CamelAS2.as2MessageStructure", AS2MessageStructure.PLAIN);
                         }
 
